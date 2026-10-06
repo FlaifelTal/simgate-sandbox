@@ -2,5 +2,5 @@
 
 | Plan | Monthly |
 |---|---|
-| Starter | 9 |
-| Team | 29 |
+| Starter | 12 |
+| Team | 39 |
