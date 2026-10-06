@@ -1,0 +1,29 @@
+name: Announce site change
+# Fires after every successful deploy. It stands in for "email 2,400 subscribers": it only writes
+# an artifact, nothing is sent. Simgate's simulator does not model workflow_run chains, which is
+# the side effect the failure test shows it under-predicting.
+on:
+  workflow_run:
+    workflows: ["Deploy site"]
+    types: [completed]
+permissions:
+  contents: read
+jobs:
+  announce:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hold window (the verifier can still cancel this run)
+        env:
+          # Repo variable. Unset = 90 s (the long window tests rely on); the demo sets 20.
+          DELAY: ${{ vars.ANNOUNCE_DELAY_SECONDS || '90' }}
+        run: |
+          case "$DELAY" in ''|*[!0-9]*) echo "ANNOUNCE_DELAY_SECONDS must be a whole number"; exit 1;; esac
+          sleep "$DELAY"
+      - name: Send announcement (simulated, nothing is emailed)
+        run: |
+          echo "Would email 2,400 subscribers: the site changed at ${{ github.event.workflow_run.head_sha }}" > announcement.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: announcement
+          path: announcement.txt
